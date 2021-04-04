@@ -15,7 +15,7 @@ struct test_sum_t {
 
 void simple_test() {
     wasmer_instance_db inst;
-    inst.add_new_script("/home/vadim/wasm-engines/examples/new-delete.wasm", "sum");
+    inst.add_new_script("../examples/new-delete.wasm", "sum");
 
     auto raw_ptr = inst.alloc_memory_in_wasm_script("sum", sizeof(test_sum_t));
     assert(raw_ptr != nullptr);

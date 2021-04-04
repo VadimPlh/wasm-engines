@@ -13,7 +13,7 @@ void print_wasmer_error() {
 
 }
 
-bool wasmer_instance::init_instance(const std::string &path_to_wasm_code) {
+bool wasmer_instance::init_instance(const std::string& path_to_wasm_code) {
     if (!create_module(path_to_wasm_code)) {
         return false;
     }
@@ -86,7 +86,7 @@ void wasmer_instance::delete_in_wasm(char* ptr) {
 }
 
 
-bool wasmer_instance::create_module(const std::string &path_to_wasm) {
+bool wasmer_instance::create_module(const std::string& path_to_wasm) {
     std::ifstream file(path_to_wasm.c_str(), std::ios::in);
     file.seekg(0, std::ios::end);
     std::streamsize size = file.tellg();
@@ -126,7 +126,7 @@ bool wasmer_instance::create_env() {
     return true;
 }
 
-bool wasmer_instance::create_imports(wasm_module_t *module) {
+bool wasmer_instance::create_imports(wasm_module_t* module) {
     wasm_importtype_vec_t import_types;
     wasm_module_imports(module, &import_types);
 
@@ -144,7 +144,7 @@ bool wasmer_instance::create_imports(wasm_module_t *module) {
     return true;
 }
 
-bool wasmer_instance::create_wasm_instance(wasm_module_t *module) {
+bool wasmer_instance::create_wasm_instance(wasm_module_t* module) {
     instance = wasm_instance_new(store, module, &imports, NULL);
 
     if (!instance) {

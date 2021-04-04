@@ -39,7 +39,7 @@ public:
         }
     }
 
-    bool init_instance(const std::string &path_to_wasm_code);
+    bool init_instance(const std::string& path_to_wasm_code);
 
     bool run_instanse(char* data);
 
@@ -47,13 +47,13 @@ public:
     void delete_in_wasm(char* ptr);
 
 private:
-    bool create_module(const std::string &path_to_wasm);
+    bool create_module(const std::string& path_to_wasm);
 
     bool create_env();
 
-    bool create_imports(wasm_module_t *module);
+    bool create_imports(wasm_module_t* module);
 
-    bool create_wasm_instance(wasm_module_t *module);
+    bool create_wasm_instance(wasm_module_t* module);
 
     bool export_data();
 
@@ -88,7 +88,7 @@ public:
 
 private:
 
-    bool create_instance(const std::string &wasm_path, const std::string &name) {
+    bool create_instance(const std::string& wasm_path, const std::string& name) {
         auto it = all_scripts.emplace(name, engine);
         if (!it.first->second.init_instance(wasm_path)) {
             all_scripts.erase(it.first);
