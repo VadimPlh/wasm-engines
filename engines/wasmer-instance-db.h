@@ -1,6 +1,7 @@
 #pragma once
 
 #include "instance-db.h"
+#include "wasm.h"
 #include "wasmer_wasm.h"
 
 #include <fstream>
@@ -40,7 +41,10 @@ public:
 
     bool init_instance(const std::string &path_to_wasm_code);
 
-    bool run_instanse();
+    bool run_instanse(char* data);
+
+    char* new_in_wasm(int64_t size);
+    void delete_in_wasm(char* ptr);
 
 private:
     bool create_module(const std::string &path_to_wasm);
@@ -51,16 +55,25 @@ private:
 
     bool create_wasm_instance(wasm_module_t *module);
 
-    bool get_run_func();
+    bool export_data();
+
+    char* wasm_ptr_to_host_ptr(int64_t wasm_ptr);
+    int64_t host_ptr_to_wasm_ptr(char* ptr);
 
 
     wasm_store_t* store{};
     wasi_env_t* wasi_env{};
     wasm_func_t* run_func{};
+
+    wasm_func_t* wasm_new{};
+    wasm_func_t* wasm_delete{};
+
     wasm_extern_vec_t imports{};
 
     wasm_module_t* module{};
     wasm_instance_t* instance{};
+
+    char* start_mem;
 };
 
 class wasmer_instance_db : public instance_db<wasmer_instance> {
@@ -74,7 +87,7 @@ public:
     }
 
 private:
-    
+
     bool create_instance(const std::string &wasm_path, const std::string &name) {
         auto it = all_scripts.emplace(name, engine);
         if (!it.first->second.init_instance(wasm_path)) {

@@ -30,15 +30,35 @@ public:
         return true;
     }
 
-    bool run_script(const std::string & name) {
+    bool run_script(const std::string & name, char* data) {
         auto engine_it = all_scripts.find(name);
         if (engine_it == all_scripts.end()) {
             std::cout << "Can not find script " << name << std::endl;
             return false;
         }
 
-        engine_it->second.run_instanse();
+        engine_it->second.run_instanse(data);
         return true;
+    }
+
+    char* alloc_memory_in_wasm_script(const std::string &name, int64_t size) {
+        auto engine_it = all_scripts.find(name);
+        if (engine_it == all_scripts.end()) {
+            std::cout << "Can not find script " << name << std::endl;
+            return nullptr;
+        }
+
+        return engine_it->second.new_in_wasm(size);
+    }
+
+    void delete_memory_in_wasm_script(const std::string &name, char* ptr) {
+        auto engine_it = all_scripts.find(name);
+        if (engine_it == all_scripts.end()) {
+            std::cout << "Can not find script " << name << std::endl;
+            return;
+        }
+
+         engine_it->second.delete_in_wasm(ptr);
     }
 
 protected:
