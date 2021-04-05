@@ -9,3 +9,5 @@ file(GLOB WASMER_LIB "libs/wasmer/lib/libwasmer.so")
 add_executable(wasm-engines main.cpp engines/wasmer-instance-db.cpp)
 
 target_link_libraries(wasm-engines ${WASMER_LIB})
+
+set(CMAKE_BUILD_TYPE "Release")

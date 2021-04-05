@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <limits>
+#include <functional>
 
 #include "wasmer-instance-db.h"
 
@@ -47,11 +48,13 @@ double simple_wasmer_bench() {
 double simple_bench_without_wasm() {
     double min_time = std::numeric_limits<double>::max();
 
+    std::function<void(test_sum_t*)> sum([](test_sum_t* obj){ obj->ans = obj->a + obj->b; });
+
     for (int i = 0; i < IT_COUNT; ++i) {
-        test_sum_t t(i, i+ 1);
+        test_sum_t obj(i, i+ 1);
 
         auto start = std::chrono::high_resolution_clock::now();
-        t.ans = t.a + t.b;
+        sum(&obj);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> time = end - start;
