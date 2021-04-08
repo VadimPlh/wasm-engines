@@ -9,13 +9,13 @@
 
 class v8_instance {
 public:
-    v8_instance(v8::Isolate* isolate_)
-    :  isolate(isolate_) {}
-
-    ~v8_instance() {
-        ctx.Reset();
-        function.Reset();
-    }
+    v8_instance(v8::Isolate::CreateParams create_params_)
+    : create_params(std::move(create_params_)),
+      isolate(v8::Isolate::New(create_params)),
+      isolate_scope(isolate),
+      handle_scope(isolate),
+      ctx(v8::Context::New(isolate)),
+      context_scope(ctx) {}
 
     bool init_instance(const std::string& path_to_wasm_code);
 
@@ -32,12 +32,16 @@ private:
 
     bool create_function();
 
+    v8::Isolate::CreateParams create_params;
     v8::Isolate* isolate{}; // Instance is not owner. wasmer_instance_db creatre and delete it!
+    v8::Isolate::Scope isolate_scope;
+    v8::HandleScope handle_scope;
+    v8::Local<v8::Context> ctx;
+    v8::Context::Scope context_scope;
 
-    v8::Global<v8::Context> ctx{};
-    v8::Global<v8::Function> function{};
-    std::shared_ptr<v8::BackingStore> store{};
-    v8::Local<v8::Script> compiled_script{};
+    v8::Local<v8::Script> compiled_script;
+    v8::Local<v8::Function> function;
+    v8::Local<v8::ArrayBuffer> data_array;
 };
 
 class v8_instance_db : public instance_db<v8_instance> {
@@ -46,20 +50,19 @@ public:
         platform = v8::platform::NewDefaultPlatform();
         v8::V8::InitializePlatform(platform.get());
         v8::V8::Initialize();
-
-        create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-        isolate = v8::Isolate::New(create_params);
     }
 
     ~v8_instance_db() {
-        isolate->Dispose();
         v8::V8::Dispose();
         v8::V8::ShutdownPlatform();
     }
 
 private:
     bool create_instance(const std::string &wasm_path, const std::string &name) override {
-        auto it = all_scripts.emplace(name, isolate);
+        v8::Isolate::CreateParams create_params;
+        create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+
+        auto it = all_scripts.emplace(name, std::move(create_params));
         if (!it.first->second.init_instance(wasm_path)) {
             all_scripts.erase(it.first);
             std::cout << "Can not create instance for " << name << std::endl;
@@ -69,6 +72,4 @@ private:
     }
 
     std::unique_ptr<v8::Platform> platform{};
-    v8::Isolate::CreateParams create_params{};
-    v8::Isolate* isolate{};
 };
