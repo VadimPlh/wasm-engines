@@ -1,4 +1,5 @@
 #include "v8-instance-db.h"
+#include "v8.h"
 
 bool v8_instance::init_instance(const std::string& path_to_wasm_code) {
     v8::HandleScope handle_scope(isolate);
@@ -22,7 +23,7 @@ bool v8_instance::init_instance(const std::string& path_to_wasm_code) {
 bool v8_instance::run_instanse(char* data) {
     v8::HandleScope handle_scope(isolate);
     v8::TryCatch try_catch(isolate);
-    auto local_ctx = v8::Context::New(isolate);
+    v8::Local<v8::Context> local_ctx = v8::Local<v8::Context>::New(isolate, ctx);
     v8::Context::Scope ctx_scope(local_ctx);
 
     auto process = v8::Local<v8::Function>::New(isolate, function);
@@ -44,7 +45,7 @@ bool v8_instance::run_instanse(char* data) {
 
 char* v8_instance::new_in_wasm(int64_t size) {
     v8::HandleScope handle_scope(isolate);
-    auto local_ctx = v8::Context::New(isolate);
+    v8::Local<v8::Context> local_ctx = v8::Local<v8::Context>::New(isolate, ctx);
     v8::Context::Scope ctx_scope(local_ctx);
 
     auto local_data_array = v8::ArrayBuffer::New(isolate, size);
@@ -55,7 +56,7 @@ char* v8_instance::new_in_wasm(int64_t size) {
 
 void v8_instance::delete_in_wasm(char* ptr) {
     v8::HandleScope handle_scope(isolate);
-    auto local_ctx = v8::Context::New(isolate);
+    v8::Local<v8::Context> local_ctx = v8::Local<v8::Context>::New(isolate, ctx);
     v8::Context::Scope ctx_scope(local_ctx);
 
     store.reset();
@@ -80,7 +81,7 @@ v8::MaybeLocal<v8::String> v8_instance::read_file(const std::string& script_path
 bool v8_instance::compile_script(const std::string script_path) {
     v8::HandleScope handle_scope(isolate);
     v8::TryCatch try_catch(isolate);
-    v8::Local<v8::Context> local_ctx(isolate->GetCurrentContext());
+    v8::Local<v8::Context> local_ctx = v8::Local<v8::Context>::New(isolate, ctx);
 
     v8::Local<v8::String> script_code = read_file(script_path).ToLocalChecked();
     v8::Local<v8::Script> compiled_script;
@@ -102,7 +103,7 @@ bool v8_instance::compile_script(const std::string script_path) {
 
 bool v8_instance::create_function() {
     v8::HandleScope handle_scope(isolate);
-    v8::Local<v8::Context> local_ctx(isolate->GetCurrentContext());
+    v8::Local<v8::Context> local_ctx = v8::Local<v8::Context>::New(isolate, ctx);
 
     v8::Local<v8::String> function_name = v8::String::NewFromUtf8Literal(isolate, "user_script");
     v8::Local<v8::Value> function_val;
