@@ -18,6 +18,47 @@ struct test_sum_t {
     int ans;
 };
 
+void print_mem_stat(const std::string& msg) {
+    std::cout << msg << std::endl;
+    malloc_stats_print(NULL, NULL, "g,l,b,h,m,a");
+    std::cout << std::endl;
+}
+
+template<typename engine_type>
+void mem_bench(const std::string &script_path) {
+    print_mem_stat("Start");
+
+    engine_type inst;
+    print_mem_stat("Create engine");
+
+    inst.add_new_script(script_path, "1");
+    print_mem_stat("Create 1 script");
+
+    inst.add_new_script(script_path, "2");
+    print_mem_stat("Create 2 script");
+
+    auto raw_ptr = inst.alloc_memory_in_wasm_script("1", sizeof(test_sum_t));
+    assert(raw_ptr != nullptr);
+    auto obj_ptr = reinterpret_cast<test_sum_t*>(raw_ptr);
+    new (raw_ptr) test_sum_t(1, 2);
+    print_mem_stat("Alloc mem");
+
+    inst.run_script("1", raw_ptr);
+    print_mem_stat("Run script");
+
+    obj_ptr->~test_sum_t();
+    inst.delete_memory_in_wasm_script("1", raw_ptr);
+    print_mem_stat("Delete mem");
+}
+
+void mem_comparison() {
+    std::cout << "!!!!!!!!!!!!!!WASMER!!!!!!!!!!!!!!" << std::endl;
+    mem_bench<wasmer_instance_db>("../examples/new-delete.wasm");
+    std::cout << std::endl;
+    std::cout << "!!!!!!!!!!!!!!V8!!!!!!!!!!!!!!" << std::endl;
+    mem_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/simple.js");
+}
+
 constexpr int64_t IT_COUNT = 700000;
 
 template<typename engine_type>
@@ -75,6 +116,5 @@ void time_comparison() {
 }
 
 int main() {
-    time_comparison();
     return 0;
 }
