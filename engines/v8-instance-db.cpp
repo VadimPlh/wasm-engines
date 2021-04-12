@@ -1,5 +1,6 @@
 #include "v8-instance-db.h"
 #include "v8.h"
+#include <memory>
 
 bool v8_instance::init_instance(const std::string& path_to_wasm_code) {
     if (!compile_script(path_to_wasm_code)) {
@@ -32,15 +33,8 @@ bool v8_instance::run_instanse(char* data) {
 char* v8_instance::new_in_wasm(int64_t size) {
     char* data_ptr = new char[size];
 
-    bool need_init_array = false;
-    if (store == nullptr) {
-        need_init_array = true;
-    }
     store = v8::ArrayBuffer::NewBackingStore(data_ptr, size, v8::BackingStore::EmptyDeleter, nullptr);
-
-    if (need_init_array) {
-        data_array = v8::ArrayBuffer::New(isolate, store);
-    }
+    data_array = v8::ArrayBuffer::New(isolate, store);
     return data_ptr;
 }
 
