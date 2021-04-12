@@ -136,7 +136,7 @@ double throughput_bench(const std::string& script_path) {
 
     engine.add_new_script(script_path, script_path);
 
-    double min_throughput = std::numeric_limits<double>::min();
+    double max_throughput = std::numeric_limits<double>::min();
 
     for (int i = 0; i < 100; ++i) {
         int64_t bytes_count = 0;
@@ -162,10 +162,10 @@ double throughput_bench(const std::string& script_path) {
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> time = end - start;
 
-        min_throughput = std::max(min_throughput, bytes_count / time.count());
+        max_throughput = std::max(max_throughput, bytes_count / time.count());
     }
 
-    return min_throughput;
+    return max_throughput;
 }
 
 void throughput_comparison() {
