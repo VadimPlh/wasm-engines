@@ -30,14 +30,22 @@ bool v8_instance::run_instanse(char* data) {
 }
 
 char* v8_instance::new_in_wasm(int64_t size) {
-    data_array = v8::ArrayBuffer::New(isolate, size);
-    auto store = data_array->GetBackingStore();
+    char* data_ptr = new char[size];
 
-    return reinterpret_cast<char*>(store->Data());
+    bool need_init_array = false;
+    if (store == nullptr) {
+        need_init_array = true;
+    }
+    store = v8::ArrayBuffer::NewBackingStore(data_ptr, size, v8::BackingStore::EmptyDeleter, nullptr);
+
+    if (need_init_array) {
+        data_array = v8::ArrayBuffer::New(isolate, store);
+    }
+    return data_ptr;
 }
 
 void v8_instance::delete_in_wasm(char* ptr) {
-
+    delete[] ptr;
 }
 
 v8::MaybeLocal<v8::String> v8_instance::read_file(const std::string& script_path) {

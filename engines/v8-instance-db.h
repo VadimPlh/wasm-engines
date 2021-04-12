@@ -41,6 +41,8 @@ private:
 
     v8::Local<v8::Script> compiled_script;
     v8::Local<v8::Function> function;
+
+    std::shared_ptr<v8::BackingStore> store;
     v8::Local<v8::ArrayBuffer> data_array;
 };
 
