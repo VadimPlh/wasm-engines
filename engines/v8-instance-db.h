@@ -11,12 +11,8 @@ class v8_instance {
 public:
     v8_instance(v8::Isolate::CreateParams create_params_)
     : create_params(std::move(create_params_)),
-      isolate(v8::Isolate::New(create_params)),
-      isolate_scope(isolate),
-      handle_scope(isolate),
-      ctx(v8::Context::New(isolate)),
-      context_scope(ctx) {}
-
+      isolate(v8::Isolate::New(create_params)) {}
+      
     bool init_instance(const std::string& path_to_wasm_code);
 
     bool run_instanse(char* data);
@@ -33,17 +29,11 @@ private:
     bool create_function();
 
     v8::Isolate::CreateParams create_params;
-    v8::Isolate* isolate{}; // Instance is not owner. wasmer_instance_db creatre and delete it!
-    v8::Isolate::Scope isolate_scope;
-    v8::HandleScope handle_scope;
-    v8::Local<v8::Context> ctx;
-    v8::Context::Scope context_scope;
-
-    v8::Local<v8::Script> compiled_script;
-    v8::Local<v8::Function> function;
+    v8::Isolate* isolate{};
+    v8::Global<v8::Context> context;
+    v8::Global<v8::Function> function;
 
     std::shared_ptr<v8::BackingStore> store;
-    v8::Local<v8::ArrayBuffer> data_array;
 };
 
 class v8_instance_db : public instance_db<v8_instance> {
