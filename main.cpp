@@ -128,22 +128,23 @@ struct throughput_bench_t {
     }
 };
 
-constexpr int32_t MAX_LENGTH = 10000;
-
 template<typename engine_type>
-double throughput_bench(const std::string& script_path) {
+void throughput_bench(const std::string& script_path) {
     engine_type engine;
 
     engine.add_new_script(script_path, script_path);
 
-    double max_throughput = std::numeric_limits<double>::min();
+    std::vector<int> lengths = {10, 100, 1000, 10000};
 
-    for (int i = 0; i < 100; ++i) {
-        int64_t bytes_count = 0;
-        auto start = std::chrono::high_resolution_clock::now();
-        for (int length = 2; length < MAX_LENGTH; ++length) {
-            bytes_count += sizeof(int32_t) * length;
-            auto alloc_size = sizeof(throughput_bench_t) + sizeof(int32_t) * length;
+    for (auto length : lengths) {
+        double max_throughput = std::numeric_limits<double>::min();
+
+        for (int i = 0; i < 1000; ++i) {
+            auto bytes_count = sizeof(int32_t) * length;
+            auto alloc_size = sizeof(throughput_bench_t) + bytes_count;
+
+            auto start = std::chrono::high_resolution_clock::now();
+
             auto raw_ptr = engine.alloc_memory_in_wasm_script(script_path, alloc_size);
             assert(raw_ptr != nullptr);
             auto obj_ptr = reinterpret_cast<throughput_bench_t*>(raw_ptr);
@@ -157,22 +158,25 @@ double throughput_bench(const std::string& script_path) {
 
             engine.delete_memory_in_wasm_script(script_path, raw_ptr);
 
+            auto end = std::chrono::high_resolution_clock::now();
+
+            std::chrono::duration<double> time = end - start;
+
+            max_throughput = std::max(max_throughput, bytes_count / time.count());
         }
 
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> time = end - start;
-
-        max_throughput = std::max(max_throughput, bytes_count / time.count());
+        std::cout << "Length: " << length << " max_throughput: " << max_throughput << std::endl;
     }
-
-    return max_throughput;
 }
 
 void throughput_comparison() {
-    std::cout << "Wasmer throughput: " << throughput_bench<wasmer_instance_db>("../examples/sum_array.wasm") << std::endl;
-    std::cout << "V8 throughput: " << throughput_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/sum_array.js") << std::endl;
+    std::cout << "Wasmer throughputs:" << std::endl;
+    throughput_bench<wasmer_instance_db>("../examples/sum_array.wasm");
+    std::cout << "V8 throughputs:" << std::endl;
+    throughput_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/sum_array.js");
 }
 
 int main() {
+    throughput_comparison();
     return 0;
 }
