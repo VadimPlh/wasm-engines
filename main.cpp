@@ -139,7 +139,7 @@ void throughput_bench(const std::string& script_path) {
     for (auto length : lengths) {
         double max_throughput = std::numeric_limits<double>::min();
 
-        for (int i = 0; i < 1000; ++i) {
+        for (int i = 0; i < 100000; ++i) {
             auto bytes_count = sizeof(int32_t) * length;
             auto alloc_size = sizeof(throughput_bench_t) + bytes_count;
 
