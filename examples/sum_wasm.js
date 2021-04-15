@@ -9,6 +9,5 @@ function user_script(obj) {
     let instance = new WebAssembly.Instance(module);
 
     let array = new Int32Array(obj);
-    //array[2] = array[0] + array[1];
     array[2] = instance.exports.add(array[0], array[1]);
 }
