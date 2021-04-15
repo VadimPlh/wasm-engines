@@ -176,7 +176,11 @@ void throughput_comparison() {
     throughput_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/sum_array.js");
 }
 
+void wasm_inside_v8() {
+    std::cout << "V8 wasm bench: " << time_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/sum_wasm.js") << std::endl;
+}
+
 int main() {
-    throughput_comparison();
+    wasm_inside_v8();
     return 0;
 }
