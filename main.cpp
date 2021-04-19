@@ -180,7 +180,22 @@ void wasm_inside_v8() {
     std::cout << "V8 wasm bench: " << time_bench<v8_instance_db>("/home/vadim/wasm-engines/examples/sum_wasm.js") << std::endl;
 }
 
+void stop_terminating() {
+    v8_instance_db inst;
+    inst.add_new_script("/home/vadim/wasm-engines/examples/loop.js", "1");
+
+    auto raw_ptr = inst.alloc_memory_in_wasm_script("1", sizeof(test_sum_t));
+    assert(raw_ptr != nullptr);
+    auto obj_ptr = reinterpret_cast<test_sum_t*>(raw_ptr);
+    new (raw_ptr) test_sum_t(1, 2);
+
+    inst.run_script("1", raw_ptr);
+
+    obj_ptr->~test_sum_t();
+    inst.delete_memory_in_wasm_script("1", raw_ptr);
+}
+
 int main() {
-    wasm_inside_v8();
+    stop_terminating();
     return 0;
 }
