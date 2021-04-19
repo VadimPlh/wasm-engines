@@ -182,16 +182,15 @@ void wasm_inside_v8() {
 
 void stop_terminating() {
     v8_instance_db inst;
-    inst.add_new_script("/home/vadim/wasm-engines/examples/loop.js", "1");
+    inst.add_new_script("/home/vadim/wasm-engines/examples/loop_with_tmp_objects.js", "1");
 
-    auto raw_ptr = inst.alloc_memory_in_wasm_script("1", sizeof(test_sum_t));
+    auto raw_ptr = inst.alloc_memory_in_wasm_script("1", sizeof(int));
     assert(raw_ptr != nullptr);
-    auto obj_ptr = reinterpret_cast<test_sum_t*>(raw_ptr);
-    new (raw_ptr) test_sum_t(1, 2);
+    auto obj_ptr = reinterpret_cast<int*>(raw_ptr);
+    *obj_ptr = 100000000;
 
     inst.run_script("1", raw_ptr);
 
-    obj_ptr->~test_sum_t();
     inst.delete_memory_in_wasm_script("1", raw_ptr);
 }
 

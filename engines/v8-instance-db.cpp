@@ -56,7 +56,7 @@ bool v8_instance::run_instanse(char* data) {
 
     v8::Local<v8::Function> local_function = v8::Local<v8::Function>::New(isolate, function);
 
-    std::thread t(thread_foo, std::chrono::high_resolution_clock::now(), 1.0, isolate);
+    std::thread t(thread_foo, std::chrono::high_resolution_clock::now(), 10.0, isolate);
 
     auto res = local_function->Call(local_ctx, local_ctx->Global(), argc, argv).ToLocal(&result);
     auto now = std::chrono::high_resolution_clock::now();
