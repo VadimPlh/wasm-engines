@@ -3,6 +3,7 @@
 #include "instance-db.h"
 
 #include "libplatform/libplatform.h"
+#include "v8-platform.h"
 #include "v8.h"
 #include <unordered_map>
 #include <cstring>
@@ -12,7 +13,7 @@ public:
     v8_instance(v8::Isolate::CreateParams create_params_)
     : create_params(std::move(create_params_)),
       isolate(v8::Isolate::New(create_params)) {}
-      
+
     bool init_instance(const std::string& path_to_wasm_code);
 
     bool run_instanse(char* data);
@@ -39,7 +40,9 @@ private:
 class v8_instance_db : public instance_db<v8_instance> {
 public:
     v8_instance_db() {
-        platform = v8::platform::NewDefaultPlatform();
+        std::string flag = "--single-threaded";
+        v8::V8::SetFlagsFromString(flag.c_str(), flag.size());
+        platform = v8::platform::NewSingleThreadedDefaultPlatform();
         v8::V8::InitializePlatform(platform.get());
         v8::V8::Initialize();
     }
